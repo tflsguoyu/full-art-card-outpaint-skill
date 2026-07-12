@@ -17,8 +17,8 @@ The skill keeps the card as a card: it preserves the outer rounded border, title
 
 | Caterpie | Metapod | Butterfree |
 | --- | --- | --- |
-| <img src="examples/Caterpie.jpg" alt="Caterpie input" height="360"> | <img src="examples/Metapod.webp" alt="Metapod input" height="360"> | <img src="examples/Butterfree.jpg" alt="Butterfree input" height="360"> |
-| <img src="examples/caterpie_full_art_outpaint.png" alt="Caterpie full-art output" height="360"> | <img src="examples/metapod_full_art_outpaint.png" alt="Metapod full-art output" height="360"> | <img src="examples/butterfree_full_art_outpaint.png" alt="Butterfree full-art output" height="360"> |
+| ![Caterpie input](examples/readme/caterpie_input.png) | ![Metapod input](examples/readme/metapod_input.png) | ![Butterfree input](examples/readme/butterfree_input.png) |
+| ![Caterpie full-art output](examples/readme/caterpie_output.png) | ![Metapod full-art output](examples/readme/metapod_output.png) | ![Butterfree full-art output](examples/readme/butterfree_output.png) |
 
 ## Installation
 
@@ -60,7 +60,14 @@ The accepted image is post-processed as RGBA PNG with transparent rounded corner
 │   ├── Caterpie.jpg
 │   ├── caterpie_full_art_outpaint.png
 │   ├── Metapod.webp
-│   └── metapod_full_art_outpaint.png
+│   ├── metapod_full_art_outpaint.png
+│   └── readme/
+│       ├── butterfree_input.png
+│       ├── butterfree_output.png
+│       ├── caterpie_input.png
+│       ├── caterpie_output.png
+│       ├── metapod_input.png
+│       └── metapod_output.png
 └── skills/
     └── full-art-outpaint/
         ├── SKILL.md
