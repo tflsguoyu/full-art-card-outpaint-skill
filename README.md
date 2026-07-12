@@ -17,9 +17,9 @@ The skill keeps the card as a card: it preserves the outer rounded border, title
 
 | Input | Full-art output |
 | --- | --- |
-| ![Butterfree input](examples/Butterfree.jpg) | ![Butterfree full-art output](examples/butterfree_full_art_outpaint.png) |
-| ![Caterpie input](examples/Caterpie.jpg) | ![Caterpie full-art output](examples/caterpie_full_art_outpaint.png) |
-| ![Metapod input](examples/Metapod.webp) | ![Metapod full-art output](examples/metapod_full_art_outpaint.png) |
+| <img src="examples/Caterpie.jpg" alt="Caterpie input" height="360"> | <img src="examples/caterpie_full_art_outpaint.png" alt="Caterpie full-art output" height="360"> |
+| <img src="examples/Metapod.webp" alt="Metapod input" height="360"> | <img src="examples/metapod_full_art_outpaint.png" alt="Metapod full-art output" height="360"> |
+| <img src="examples/Butterfree.jpg" alt="Butterfree input" height="360"> | <img src="examples/butterfree_full_art_outpaint.png" alt="Butterfree full-art output" height="360"> |
 
 ## Installation
 
