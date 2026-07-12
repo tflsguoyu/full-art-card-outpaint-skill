@@ -1,0 +1,4 @@
+interface:
+  display_name: "Full-Art Card Outpaint"
+  short_description: "Outpaint regular card art into full-art cards"
+  default_prompt: "Use $full-art-outpaint on the uploaded image to make an outpainted full-art card."
