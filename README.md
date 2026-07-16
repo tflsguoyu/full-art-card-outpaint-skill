@@ -40,8 +40,8 @@ Both skills print their version as the first progress line when invoked.
 | Caterpie | Metapod | Butterfree |
 | --- | --- | --- |
 | ![Caterpie input](examples/readme/caterpie_input.png) | ![Metapod input](examples/readme/metapod_input.png) | ![Butterfree input](examples/readme/butterfree_input.png) |
-| ![Caterpie art-only output](examples/readme/caterpie_art_only.png) | ![Metapod art-only output](examples/readme/metapod_art_only.png) | ![Butterfree art-only output](examples/readme/butterfree_art_only.png) |
 | ![Caterpie full-art with UI output](examples/readme/caterpie_output.png) | ![Metapod full-art with UI output](examples/readme/metapod_output.png) | ![Butterfree full-art with UI output](examples/readme/butterfree_output.png) |
+| ![Caterpie art-only output](examples/readme/caterpie_art_only.png) | ![Metapod art-only output](examples/readme/metapod_art_only.png) | ![Butterfree art-only output](examples/readme/butterfree_art_only.png) |
 
 ## Installation
 
