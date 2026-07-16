@@ -39,9 +39,9 @@ Both skills print their version as the first progress line when invoked.
 
 | Caterpie | Metapod | Butterfree |
 | --- | --- | --- |
-| ![Caterpie input](examples/readme/caterpie_input.png) | ![Metapod input](examples/readme/metapod_input.png) | ![Butterfree input](examples/readme/butterfree_input.png) |
-| ![Caterpie full-art with UI output](examples/readme/caterpie_output.png) | ![Metapod full-art with UI output](examples/readme/metapod_output.png) | ![Butterfree full-art with UI output](examples/readme/butterfree_output.png) |
-| ![Caterpie art-only output](examples/readme/caterpie_art_only.png) | ![Metapod art-only output](examples/readme/metapod_art_only.png) | ![Butterfree art-only output](examples/readme/butterfree_art_only.png) |
+| <img src="examples/readme/caterpie_input.png" width="180" alt="Caterpie input"> | <img src="examples/readme/metapod_input.png" width="180" alt="Metapod input"> | <img src="examples/readme/butterfree_input.png" width="180" alt="Butterfree input"> |
+| <img src="examples/readme/caterpie_output.png" width="180" alt="Caterpie full-art with UI output"> | <img src="examples/readme/metapod_output.png" width="180" alt="Metapod full-art with UI output"> | <img src="examples/readme/butterfree_output.png" width="180" alt="Butterfree full-art with UI output"> |
+| <img src="examples/readme/caterpie_art_only.png" width="180" alt="Caterpie art-only output"> | <img src="examples/readme/metapod_art_only.png" width="180" alt="Metapod art-only output"> | <img src="examples/readme/butterfree_art_only.png" width="180" alt="Butterfree art-only output"> |
 
 ## Installation
 
