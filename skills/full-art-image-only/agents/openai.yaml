@@ -1,0 +1,4 @@
+interface:
+  display_name: "full-art-image-only"
+  short_description: "Create one UI-free full-card art image"
+  default_prompt: "Use $full-art-image-only on the uploaded card to create one art-only full-card image with all UI, text, panels, and borders removed."

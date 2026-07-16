@@ -1,18 +1,39 @@
 # Full Art Gen
 
-A Codex skill for turning regular card-style illustrations into full-art card outpaints.
+Codex skills for turning regular card-style illustrations into full-art outpaints.
 
-The skill first creates a pure art-only outpaint, then uses that image as the base for one complete card generation that restores the original outer border, title/HP area, stage or evolution labels, attack/rules text, icons, weakness/resistance/retreat row, copyright line, and other UI overlays. It removes the horizontal middle information strip and extends the illustration behind the top and lower card areas so the result reads as one continuous full-art scene.
+This repo now keeps two workflows:
 
-## What It Does
+- `full-art-image-only`: the main workflow. Generates one UI-free `art-only.png`.
+- `full-art-image-with-ui`: the UI-preserving workflow. Generates one complete full-art card as `full-art-card.png`.
 
-- Converts one uploaded card image into an art-only image and one complete full-art card.
-- Makes exactly one image-generation call for each output and accepts the first successful result without retries, variants, or corrective image edits.
-- Removes the narrow horizontal species/info strip around the lower edge of the illustration window.
-- Extends the original illustration into the top name/HP area and lower rules area.
-- Keeps non-target card UI and text readable in approximately the original positions.
-- Preserves the outer rounded card border and transparent rounded corners.
-- Returns both output images and their absolute file paths.
+## Workflows
+
+### Main: Art Only
+
+Use `$full-art-image-only` when you want only the illustration.
+
+- Converts one uploaded card image into one art-only full-card portrait.
+- Removes all card UI, text, symbols, strips, panels, frame lines, logos, and the outer border/rim.
+- Extends the original illustration across the full rectangular canvas.
+- Saves an opaque RGB image named `art-only.png`.
+- Outputs to `outputs/full-art-image-only/YYYYMMDD-HHMMSS/art-only.png`.
+- Current installed version: `20260716-102916`.
+
+### With UI: Full Card
+
+Use `$full-art-image-with-ui` when you want a complete full-art card with UI retained.
+
+- Converts one uploaded card image into one full-art card.
+- Removes the horizontal middle species/info strip.
+- Preserves the outer rounded border, title/HP area, stage/evolution labels, attack/rules text, icons, weakness/resistance/retreat row, copyright line, and other non-target UI.
+- Extends the original illustration behind the top and lower card areas.
+- Post-processes the result as an RGBA PNG with transparent rounded corners.
+- Saves the final image as `full-art-card.png`.
+- Outputs to `outputs/full-art-image-with-ui/YYYYMMDD-HHMMSS/full-art-card.png`.
+- Current installed version: `20260716-102916`.
+
+Both skills print their version as the first progress line when invoked.
 
 ## Examples
 
@@ -23,35 +44,43 @@ The skill first creates a pure art-only outpaint, then uses that image as the ba
 
 ## Installation
 
-Copy the skill folder into your Codex skills directory:
+Copy one or both skill folders into your Codex skills directory:
 
 ```bash
 mkdir -p ~/.codex/skills
-cp -R skills/full-art-outpaint ~/.codex/skills/
+cp -R skills/full-art-image-only ~/.codex/skills/
+cp -R skills/full-art-image-with-ui ~/.codex/skills/
 ```
 
-Restart Codex or start a new task so the skill is discovered.
+Restart Codex or start a new task so the skills are discovered.
 
 ## Usage
 
-Upload a card image and ask Codex to use the skill:
+Art-only output:
 
 ```text
-Use $full-art-outpaint on this image.
+Use $full-art-image-only on this image.
 ```
 
-The skill is intentionally one-image-in, two-images-out. Each image is generated once: the first successful result becomes the output without regeneration or corrective image edits. The skill does not ask for style, size, character, target area, or composition details; the uploaded image is treated as the visual authority.
+Full card with UI:
+
+```text
+Use $full-art-image-with-ui on this image.
+```
+
+Neither skill asks for style, size, character, target area, or composition details. The uploaded image is treated as the visual authority.
 
 ## Output
 
-The final response shows:
+`$full-art-image-only` returns:
 
 - `art-only.png`, followed by `保存路径：` and its absolute file path
+
+`$full-art-image-with-ui` returns:
+
 - `full-art-card.png`, followed by `保存路径：` and its absolute file path
 
-Both images are displayed inline; the absolute paths are always shown even when the images render successfully.
-
-The complete card is post-processed as an RGBA PNG with transparent rounded corners. Only pixels outside the card's rounded rectangle should become transparent; the restored card border itself is preserved.
+Images are displayed inline; absolute paths are always shown even when the images render successfully.
 
 ## Repository Structure
 
@@ -59,11 +88,8 @@ The complete card is post-processed as an RGBA PNG with transparent rounded corn
 .
 ├── examples/
 │   ├── Butterfree.jpg
-│   ├── butterfree_full_art_outpaint.png
 │   ├── Caterpie.jpg
-│   ├── caterpie_full_art_outpaint.png
 │   ├── Metapod.webp
-│   ├── metapod_full_art_outpaint.png
 │   └── readme/
 │       ├── butterfree_input.png
 │       ├── butterfree_output.png
@@ -72,17 +98,22 @@ The complete card is post-processed as an RGBA PNG with transparent rounded corn
 │       ├── metapod_input.png
 │       └── metapod_output.png
 └── skills/
-    └── full-art-outpaint/
+    ├── full-art-image-only/
+    │   ├── SKILL.md
+    │   ├── agents/
+    │   │   └── openai.yaml
+    │   └── scripts/
+    │       └── normalize_rgb.py
+    └── full-art-image-with-ui/
         ├── SKILL.md
         ├── agents/
         │   └── openai.yaml
         └── scripts/
-            ├── apply_rounded_alpha.py
-            └── normalize_rgb.py
+            └── apply_rounded_alpha.py
 ```
 
 ## Notes
 
-This repository contains a Codex skill, not a standalone image-generation app. The actual image edit is performed through Codex's image generation/editing capability, and `scripts/apply_rounded_alpha.py` handles the deterministic final rounded-corner alpha pass.
+This repository contains Codex skills, not a standalone image-generation app. The actual image edits are performed through Codex's image generation/editing capability, with deterministic scripts used only for final file formatting.
 
 Example images are included to demonstrate the workflow and expected before/after behavior. This project is not affiliated with, endorsed by, or sponsored by any card game publisher or rights holder.

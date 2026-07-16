@@ -1,4 +1,0 @@
-interface:
-  display_name: "Full-Art Card Outpaint"
-  short_description: "Create art-only and complete full-art card outputs"
-  default_prompt: "Use $full-art-outpaint on the uploaded card to create the art-only image and the complete full-art card."
