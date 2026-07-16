@@ -2,16 +2,17 @@
 
 A Codex skill for turning regular card-style illustrations into full-art card outpaints.
 
-The skill keeps the card as a card: it preserves the outer rounded border, title/HP area, stage or evolution labels, attack/rules text, icons, weakness/resistance/retreat row, copyright line, and other UI overlays. It removes the horizontal middle information strip and extends the original illustration behind the top and lower card areas so the result reads as one continuous full-art scene.
+The skill first creates a pure art-only outpaint, then uses that image as the base for one complete card generation that restores the original outer border, title/HP area, stage or evolution labels, attack/rules text, icons, weakness/resistance/retreat row, copyright line, and other UI overlays. It removes the horizontal middle information strip and extends the illustration behind the top and lower card areas so the result reads as one continuous full-art scene.
 
 ## What It Does
 
-- Converts one uploaded card image into one full-art outpainted card.
+- Converts one uploaded card image into an art-only image and one complete full-art card.
+- Makes exactly one image-generation call for each output and accepts the first successful result without retries, variants, or corrective image edits.
 - Removes the narrow horizontal species/info strip around the lower edge of the illustration window.
 - Extends the original illustration into the top name/HP area and lower rules area.
 - Keeps non-target card UI and text readable in approximately the original positions.
 - Preserves the outer rounded card border and transparent rounded corners.
-- Returns the final PNG image and the final PNG's absolute file path.
+- Returns both output images and their absolute file paths.
 
 ## Examples
 
@@ -39,16 +40,18 @@ Upload a card image and ask Codex to use the skill:
 Use $full-art-outpaint on this image.
 ```
 
-The skill is intentionally one-image-in, one-image-out. It does not ask for style, size, character, target area, or composition details; the uploaded image is treated as the visual authority.
+The skill is intentionally one-image-in, two-images-out. Each image is generated once: the first successful result becomes the output without regeneration or corrective image edits. The skill does not ask for style, size, character, target area, or composition details; the uploaded image is treated as the visual authority.
 
 ## Output
 
 The final response shows:
 
-- the final outpainted PNG image
-- the final PNG's absolute file path
+- `art-only.png`, followed by `保存路径：` and its absolute file path
+- `full-art-card.png`, followed by `保存路径：` and its absolute file path
 
-The accepted image is post-processed as RGBA PNG with transparent rounded corners. Only pixels outside the card's rounded rectangle should become transparent; the card border itself is preserved.
+Both images are displayed inline; the absolute paths are always shown even when the images render successfully.
+
+The complete card is post-processed as an RGBA PNG with transparent rounded corners. Only pixels outside the card's rounded rectangle should become transparent; the restored card border itself is preserved.
 
 ## Repository Structure
 
@@ -74,7 +77,8 @@ The accepted image is post-processed as RGBA PNG with transparent rounded corner
         ├── agents/
         │   └── openai.yaml
         └── scripts/
-            └── apply_rounded_alpha.py
+            ├── apply_rounded_alpha.py
+            └── normalize_rgb.py
 ```
 
 ## Notes

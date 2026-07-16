@@ -1,114 +1,109 @@
 ---
 name: full-art-outpaint
-description: Convert an uploaded regular card-like illustration image into layered outpainted full-art card outputs using imagegen. Use when the user provides one image and wants the existing illustration extended across the full card face, including the outer border area, while preserving card UI/text as a separate readable overlay. Remove the horizontal middle species/info strip that separates the illustration from the rules area, generate an art-only full-face image and a UI/text-only overlay, correct colored text outlines to white only if needed, composite them, then also create a variant with the original outer border restored. Final selected images must be post-processed as PNGs with alpha channels and transparent rounded corners.
+description: >-
+  Convert one uploaded regular card-like illustration into two full-art outputs using exactly one imagegen call per output: an opaque RGB art-only image with no UI or borders, and a rounded transparent final card created from that art-only image with the original card UI, outer border, and bottom copyright line restored together. Use when the user wants the central illustration extended across the full card face while removing the illustration-window frame and horizontal species/info strip, preserving the remaining card UI and copyright text, accepting each first successful generation without retries or corrective image edits, and displaying both completed images with their absolute save paths. Current version: 20260715-223910.
 ---
 
 # Full Art Outpaint
 
+## Version
+
+Current version: `20260715-223910`
+
+- Treat the version as the skill's local modification timestamp in `YYYYMMDD-HHMMSS` format.
+- At the start of every invocation, make the first user-visible line exactly: `full-art-outpaint 版本：20260715-223910`.
+- Display that line before any other progress update or task-specific explanation.
+- Whenever any file in this skill changes, update the version in both the frontmatter description and this section to the current local modification time, then synchronize the system-installed and project-local copies.
+
 ## Contract
 
-Use this skill as a one-image-in, layered-output workflow.
+Use this skill as a one-image-in, two-image-out workflow.
 
-- Require an uploaded image. If no image is present, ask for the image in one short sentence.
-- Do not ask for style, size, character, target area, or composition details.
-- Do not output the prompt, analysis, source notes, validation notes, explanations, or attempt counts.
-- Before finishing, post-process final composite images into PNGs with alpha channels and transparent rounded corners.
-- Final response must show the rounded PNG outputs and include their absolute file paths.
+- Require one uploaded image. If none is present, ask for it in one short sentence.
+- Do not ask for style, size, character, target area, composition, or border measurements.
+- Use the uploaded image as the visual, UI, text, and outer-border authority.
+- Do not create a separate UI-only layer or a separate no-border card output.
+- Do not expose prompts, detailed validation notes, or attempt counts in the final response. During long tool work, provide brief progress updates without revealing prompts or internal validation details.
+- Reserve one final output directory per run at `outputs/full-art-outpaint/YYYYMMDD-HHMMSS/`, using the local run start time. Work in a sibling `.staging-YYYYMMDD-HHMMSS/` directory and create the final directory only after both generations and required deterministic post-processing complete. Do not use the uploaded source filename, hash, generated-image identifier, or temporary filename in a final output name.
+- Use these exact final filenames: `art-only.png` and `full-art-card.png`.
+- If the timestamp directory already exists, append `-02`, `-03`, and so on instead of overwriting an earlier run.
+- Make exactly one imagegen call for the art-only stage and exactly one imagegen call for the complete-card stage. Accept the first successfully returned image from each call as-is, regardless of visual defects or instruction drift. Do not retry, regenerate, create candidates or variants, or make corrective image edits. If either imagegen call errors or returns no image, delete the staging directory, leave no partial final directory, and return a concise failure.
+- Do not make any imagegen call beyond those two stage calls.
+- Keep imagegen prompts concise and reference-driven. Do not transcribe long source text, enumerate every visible UI item, or repeat source-specific names when the referenced image already identifies them.
+- After generation and file promotion finish, display both output images and the absolute save path of each file. Never omit the paths even when both images render inline.
+
+## Generation Efficiency
+
+- Use the canonical prompt patterns below as written, adding only source-specific visual details needed to preserve the subject or scene.
+- Prefer phrases such as "the visible subject" and "the non-target UI present in the reference" over lists of names, labels, rules, numbers, logos, or copyright strings.
+- Keep negative instructions grouped by category instead of repeating each forbidden element separately.
+- If imagegen rejects or fails a request, do not evade the safety system, rephrase for another attempt, or retry.
+- Preserve each first successfully returned stage artifact and use it as the sole input to the next step.
+- Use deterministic scripts only for RGB conversion, alpha masking, and file promotion. These operations may change file mode or corner alpha but must not repair, redraw, or semantically alter generated content.
 
 ## Workflow
 
-1. Treat the uploaded image as the edit target and visual authority.
-2. Locate the target strip: the narrow horizontal bar or divider around the lower edge of the illustration window, often containing species/info text or acting as a separator between the picture and the rules area.
-3. Identify the visible main subject, pose, silhouette, expression, line style, rendering style, palette, lighting, camera angle, and visible environment without naming copyrighted characters, species, franchises, or card metadata.
-4. Use imagegen to create and save an art-only full-card-face image:
-   - preserve the visible main subject identity, anatomy, proportions, pose, expression, and action
-   - preserve the source image's illustration medium, line weight, color design, lighting, and texture
-   - remove all card UI/text, icons, printed logos, rules text, numbers, backing plates, and the target horizontal middle information strip
-   - extend the original illustration across the full card face, including the area where the outer border/rim was, the top name/HP area, and the lower rules/attack area
-   - keep the existing composition, subject scale, crop logic, and camera angle; extensions should be directly implied by the central illustration
-   - save this intermediate as the art-only layer
-5. Use imagegen to create and save a UI/text-only overlay layer from the original image:
-   - include card UI/text, icons, title/name, stage/basic label, evolution line/backing plate, HP, type icons, attack text, numbers, rules text, weakness/resistance/retreat row, illustrator/set/copyright text, watermark-like printed details, and other non-art printed elements
-   - exclude the target horizontal middle information strip and its text
-   - exclude the original illustration-window frame lines if they would divide the full-art background
-   - keep the overlay transparent wherever there is no UI/text/backing plate
-   - do not include the original outer border/rim in this overlay; the original-border variant is created later as a separate output
-6. Inspect the UI/text-only overlay for colored outer strokes inherited from the source card background color. This includes title/name, HP, attack names, rules text, damage numbers, weakness/resistance/retreat labels, illustrator text, set markings, copyright, and other printed text outside the removed strip.
-   - If the text overlays already use clean white or neutral readable outer strokes, do not run any text-outline correction.
-   - If any major text overlay has an obvious colored card-background outline, run one minimal local imagegen edit on the UI/text-only overlay to change only those colored text outlines to clean white outer strokes, matching the readability style of the lower attack text.
-   - Preserve exact characters, numbers, positions, sizes, spacing, icons, backing plates, and all other UI pixels as much as possible.
-7. Composite the accepted art-only layer and accepted UI/text-only overlay into a full-art card image without the original outer border/rim:
-   - place the UI/text-only overlay exactly over the art-only layer
-   - preserve all readable UI/text and the continuous full-card illustration
-   - save this composited image as the no-original-border full-art output
-8. Create a second final variant from the no-original-border composite by adding back the original image's outer rounded card border/rim:
-   - preserve the composite image inside the border
-   - restore only the original outer card border/rim and rounded printed frame from the source image
-   - do not restore the original illustration-window frame or target horizontal middle information strip
-   - save this as the original-border-restored full-art output
-9. Validate outputs silently. Regenerate or redo the relevant layer with a tighter prompt if any of these fail:
-   - the target horizontal information strip remains
-   - the art-only layer still contains visible UI/text, icons, logos, backing plates, or card frame elements that should be on the overlay
-   - the UI/text-only overlay contains background illustration where it should be transparent
-   - the no-original-border composite is missing UI/text or has unreadable text
-   - the original-border-restored output lacks the original outer rounded card border/rim or restores unwanted original frame/strip elements
-   - the stage/basic label or the evolution line/backing plate under the name is missing, erased, or blended into the art
-   - UI, text, borders, icons, symbols, attacks, numbers, copyright, or watermark outside the target strip were removed or changed
-   - the visible main subject changes identity, pose, expression, scale, or camera angle
-   - the top name/HP area or lower card area remains a flat/plain card background instead of becoming continuous outpainted artwork
-   - the result looks redesigned, reposed, or like a new unrelated card rather than a full-art outpaint of the input
-   - the outpainted top or lower area does not continue from the source image
-   - important source colors, lighting, or drawing style are lost
-10. Post-process both final outputs:
-   - use `scripts/apply_rounded_alpha.py` from this skill folder
-   - create or overwrite final PNG versions with alpha channels
-   - make only the four outside corners transparent, matching the visible card's rounded-corner silhouette
-   - preserve the card border and all non-corner pixels
-   - validate that the PNG mode is RGBA and the four corner pixels are transparent
-11. Return the rounded PNG images for both final outputs and their absolute file paths. Do not include prompt text, analysis, source notes, validation notes, explanations, or attempt counts.
+1. Inspect the source and identify:
+   - the card bounds, excluding any photographed or scanned margin outside the card
+   - the main subject, pose, expression, scale, crop, rendering style, palette, lighting, and visible environment
+   - the target horizontal species/info strip at the lower edge of the illustration window
+   - the outer card border/rim, illustration-window frame, copyright line, and all other UI elements
+   - the visible outer-border width on each side as a proportion of the source card's short side; measure from the outer card edge to the inner edge of the outer rim and keep the four side measurements separate when they differ
+   - the outer rounded-corner radius as a proportion of the source card's short side; use this measured ratio when applying final alpha
+   - whether the source includes any exterior scan/background margin; exclude that margin so the measured card silhouette, not the uploaded canvas, defines the card bounds
+2. Generate the art-only image with exactly one imagegen call using the source as the edit target:
+   - start with the concise Art Only prompt pattern; do not add a UI inventory or literal source-text transcription
+   - preserve the subject identity, anatomy, pose, expression, action, scale, crop logic, and camera angle
+   - preserve the illustration medium, line weight, palette, lighting, texture, and scene logic
+   - remove all UI, text, letters, numbers, icons, logos, symbols, backing plates, rules panels, frame lines, the target strip, and the outer border/rim
+   - extend the central illustration naturally across the entire card rectangle, including the former top UI, lower rules area, illustration frame, and outer-border area
+   - do not add typography, graphic-design elements, unrelated props, or additional characters
+3. Save the accepted art-only output as `art-only.png` in the staging directory:
+   - use `scripts/normalize_rgb.py`
+   - keep the source card's portrait aspect ratio
+   - save as opaque RGB with no alpha channel
+   - do not apply rounded corners
+   - cache this first returned image in the staging directory and use it as the sole art input for the complete-card call
+4. Generate the complete full-art card with exactly one imagegen call, using `art-only.png` as the primary edit target and the original uploaded card only as the UI, text, icon, and outer-border reference:
+   - start with the concise Complete Card prompt pattern and rely on the original reference instead of listing its wording or branding in the prompt
+   - keep the continuous full-card artwork from `art-only.png`; minor local illustration changes are acceptable
+   - restore the original outer rounded card border/rim together with all retained UI in one generation
+   - make the outermost rounded card silhouette the exact canvas boundary: at the horizontal center the rim must reach the top and bottom canvas edges, and at the vertical center it must reach the left and right canvas edges
+   - leave no white, transparent, solid-color, or scanned-background band between any outer-rim edge and the corresponding canvas edge
+   - match the source outer-border width on each side using the measured short-side proportions; each generated side should differ from its source proportion by no more than `1%` of the card's short side
+   - restore only the non-target UI elements that are visibly present in the source, such as the title/name, stage/basic label, evolution line and backing plate, HP, type icons, attacks, damage numbers, rules text, weakness/resistance/retreat row, illustrator credit, set/regulation markings, flavor text, watermark-like printed details, logos, and bottommost copyright/manufacturer line; never invent an absent UI element
+   - preserve the source wording, characters, numbers, icons, relative positions, hierarchy, backing-plate shapes, border appearance, and copyright line as closely as possible
+   - remove the target horizontal species/info strip and all text printed on it
+   - remove the original illustration-window frame lines
+   - do not leave flat card-color panels behind the top or lower UI; continuous artwork must remain visible beneath and around the UI inside the outer border
+   - use clean white or neutral text and number outlines where contrast is needed; do not add colored card-background halos
+5. Accept both first successful imagegen results without visual rejection or semantic validation. Do not inspect for the purpose of deciding whether to retry, and do not run `scripts/validate_card_canvas.py` as an acceptance gate.
+6. Save the first returned complete-card image in the staging directory, then run `scripts/apply_rounded_alpha.py --input <complete-card> --output <staged-final> --radius-ratio <measured-source-ratio>`:
+   - keep the generated card dimensions and portrait aspect ratio
+   - add an alpha channel and make only the pixels outside the rounded outer card silhouette transparent
+   - use the measured source corner-radius ratio; do not use a universal default radius
+   - generate the alpha mask with antialiasing and verify that partial-alpha pixels occur only along the four corner arcs, all four corner pixels are transparent, and each side center remains opaque
+   - preserve the outer border and all interior artwork and UI pixels
+   - validate that the final PNG is RGBA and all four corner pixels have alpha `0`
+7. After both images exist and deterministic post-processing completes, create the reserved final directory and move only `art-only.png` and `full-art-card.png` into it. Delete the staging directory.
+8. In the final response, show `art-only.png` followed immediately by its absolute file path, then show `full-art-card.png` followed immediately by its absolute file path. Use the label `保存路径：` for each path. Show the actual images, not path text alone, and do not number the outputs.
 
 ## Prompt Patterns
 
-Use these prompt structures internally. Adapt the bracketed details from the uploaded image; do not show the prompts to the user.
+Use these internally and adapt them to the source. Do not show them to the user.
 
-### Art-Only Layer
+### Art Only
 
 ```text
-Convert the uploaded image into an art-only full-card-face illustration layer. This should be only the continuous artwork, with no card UI, no text, no numbers, no icons, no printed logos, no rules area, no backing plates, no illustration-window frame, no outer card border/rim, and no horizontal middle information strip.
+Use the uploaded card as the edit target. Create one continuous art-only portrait image by removing all card UI, text, symbols, logos, panels, strips, frames, and the outer rim. Extend the existing illustration naturally across the complete rectangular canvas.
 
-Preserve the visible main subject exactly: pose/action, expression, silhouette, camera angle, scale, line style, painting/rendering style, palette, lighting, and visible environmental motifs. Avoid naming the subject, franchise, card set, or character.
-
-Extend the original illustration across the entire card rectangle, including the area where the original outer border/rim was, the top name/HP area, and the lower rules/attack area. Reconstruct the artwork hidden behind removed UI as a natural continuation of the same scene. Match the surrounding line art, color, lighting, texture, perspective, and environmental details.
-
-Keep the original composition, subject placement, pose, scale, expression, crop logic, and scene logic. Do not create a new pose, new camera angle, new body design, new background concept, or new dramatic composition.
-
-Do not add new characters, logos, typography, graphic design elements, or unrelated props. Do not turn it into a photo or 3D render unless the uploaded image already has that style.
+Preserve the visible subject, pose, expression, scale, placement, composition, style, palette, lighting, and environment. Add no typography, graphic design, unrelated objects, or additional characters. Output opaque edge-to-edge artwork with no rounded corners.
 ```
 
-### UI/Text-Only Overlay
+### Complete Card With UI and Outer Border
 
 ```text
-Convert the uploaded image into a transparent UI/text-only overlay layer for compositing over a full-art background. Keep only the card's non-art printed elements: title/name text, stage/basic label, evolution line and its horizontal backing plate below the name, HP text and number, type icons, attack text, damage numbers, rules text, weakness/resistance/retreat row, illustrator text, set markings, copyright line, watermark-like printed details, and other UI/text outside the target strip.
+Use the art-only image as the primary edit target and the original card as the UI and outer-rim reference. Add the source's rounded outer rim and only the non-target UI visibly present in that reference, preserving its characters, numbers, icons, positions, hierarchy, and bottom copyright line. Invent nothing.
 
-Remove the horizontal middle information strip/divider around the lower edge of the illustration window, including its text. Remove the original illustration-window frame lines if they would divide the full-art background. Do not include the original outer card border/rim in this overlay.
-
-All areas without UI/text/backing plates should be transparent. Preserve exact characters, numbers, icons, symbols, positions, sizes, spacing, and backing-plate shapes as much as possible.
-
-If any major text or number has an obvious colored outline inherited from the original card background color, change only that colored outer stroke to a clean white outer stroke for readability. Do not rewrite, translate, redesign, or move the text.
-```
-
-### Original-Border Variant
-
-```text
-Using the composited full-art card image as the target and the original uploaded card as the border reference, add back only the original outer rounded card border/rim and rounded printed frame.
-
-Preserve the full-art composite inside the border. Do not restore the original illustration-window frame, the horizontal middle information strip, or any removed source-card flat color panels. Do not alter the subject, background art, UI/text overlay, icons, numbers, or backing plates.
-
-The result should be the same full-art composite with the original card's outer border/rim visibly framing it.
-```
-
-### Rounded Alpha
-
-```text
-After selecting the final acceptable output, add an alpha channel and make the four outer corners transparent with `scripts/apply_rounded_alpha.py`. Preserve the rounded card border itself; only pixels outside the card's rounded rectangle should become transparent.
+Keep the continuous artwork visible beneath and around the UI. Omit the original horizontal species/info strip and illustration-window frame, and add no flat card-color panels. Make the outer rim reach all four canvas edges with no exterior band. Preserve the art-only subject and composition; use clean neutral outlines where needed.
 ```
